@@ -167,7 +167,11 @@ def summarize(flight_id: str, df: pd.DataFrame, log: DJILog, fd: FrameDetails) -
         # --- link and GPS (airborne only) ---
         # Single zero samples are short dropouts – min() would understate quality,
         # so we use the 5th percentile + total weak-signal time (frames every 0.1 s)
-        # NOTE: uplink goes up to 125, so the scale is not purely a percentage
+        # WARNING: for Lito X1 (unknown to pydjirecord as UNKNOWN_165) these values
+        # look misdecoded – they come from the OFDM record (7 bits value + 1 bit
+        # direction), reach up to 127 instead of 0–100 and jump around a constant 90
+        # even when the drone hovers next to the pilot. Treat rc_* columns as
+        # unreliable until the record layout for this model is confirmed.
         "rc_down_p05_air": col_q("RC.downlinkSignal", 0.05, airborne),  # drone → remote
         "rc_up_p05_air": col_q("RC.uplinkSignal", 0.05, airborne),  # remote → drone
         # number of frames with signal < 30, times 0.1 s (assumes ~10 frames per second)
